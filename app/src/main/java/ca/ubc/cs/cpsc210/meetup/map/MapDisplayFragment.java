@@ -38,6 +38,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.SortedSet;
 
 import ca.ubc.cs.cpsc210.meetup.R;
 import ca.ubc.cs.cpsc210.meetup.model.Building;
@@ -82,15 +84,15 @@ public class MapDisplayFragment extends Fragment {
      * Meetup Service URL
      * CPSC 210 Students: Complete the string.
      */
-    private final String getStudentURL = "";
+    private final String getStudentURL = "http://kramer.nss.cs.ubc.ca:8081/getStudent/";
 
     /**
      * FourSquare URLs. You must complete the client_id and client_secret with values
      * you sign up for.
      */
     private static String FOUR_SQUARE_URL = "https://api.foursquare.com/v2/venues/explore";
-    private static String FOUR_SQUARE_CLIENT_ID = "";
-    private static String FOUR_SQUARE_CLIENT_SECRET = "";
+    private static String FOUR_SQUARE_CLIENT_ID = "3V1FG5AD01GSXSHHAVPB3SIEAS5SPCJ4HB51TOO5K4ZFG2Q2";
+    private static String FOUR_SQUARE_CLIENT_SECRET = "N0ARMWVPN5PKPSLGFWNS14R1SKC50YWWWAENEYPD1CC0GBNP";
 
 
     /**
@@ -242,8 +244,18 @@ public class MapDisplayFragment extends Fragment {
         // and plots the route.
         // Assumes mySchedulePlot is a create and initialized SchedulePlot object
 
+
+        clearSchedules();
+        SortedSet<Section> mySchedule = me.getSchedule().getSections(sharedPreferences.getString(activeDay, "MWF"));
+
+        SchedulePlot mySchedulePlot = new SchedulePlot(mySchedule, "Vinny", "blue", 1);
+
+
+
+
+
         // UNCOMMENT NEXT LINE ONCE YOU HAVE INSTANTIATED mySchedulePlot
-      //  new GetRoutingForSchedule().execute(mySchedulePlot);
+        new GetRoutingForSchedule().execute(mySchedulePlot);
     }
 
     /**
@@ -358,6 +370,7 @@ public class MapDisplayFragment extends Fragment {
         studentManager = new StudentManager();
 
         studentManager.addStudent("Chan", "Vinny", ME_ID);
+        me = studentManager.get(ME_ID);
 
         studentManager.addSectionToSchedule(ME_ID, "CPSC", 210, "BCS");
         studentManager.addSectionToSchedule(ME_ID, "ENGL", 222, "007");
@@ -499,6 +512,9 @@ public class MapDisplayFragment extends Fragment {
      */
     private class GetRoutingForSchedule extends AsyncTask<SchedulePlot, Void, SchedulePlot> {
 
+        String latLonBuilding1;
+        String latLonBuilding2;
+
         @Override
         protected void onPreExecute() {
         }
@@ -514,6 +530,30 @@ public class MapDisplayFragment extends Fragment {
             // that forms the routing between the buildings on the
             // schedule. The List<GeoPoint> should be put into
             // scheduleToPlot object.
+
+            List<GeoPoint> geopoints;
+
+            SortedSet<Section> sectionsToPlot = scheduleToPlot.getSections();
+
+            //List<String> latLons = new ArrayList<String>();
+            for (Section s : sectionsToPlot) {
+                double lat;
+                double lon;
+                lat = s.getBuilding().getLatLon().getLatitude();
+                lon = s.getBuilding().getLatLon().getLongitude();
+
+                String latLonString1 = lat + "," + lon;
+
+
+                try {
+                    makeRoutingCall("http://open.mapquestapi.com/directions/v2/route?key=Fmjtd%7Cluu82lutll%2Cbx%3Do5-948aqz&callback=renderAdvancedNarrative&outFormat=json&routeType=pedestrian&timeType=1&enhancedNarrative=false&shapeFormat=raw&generalize=0&locale=en_US&unit=m&from="
+                            + latLonString1 + "&to=" + latLonBuilding2 + "&drivingStyle=2&highwayEfficiency=21.0");
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
 
             return null;
         }
