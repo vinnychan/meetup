@@ -17,6 +17,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.osmdroid.DefaultResourceProxyImpl;
 import org.osmdroid.ResourceProxy;
 import org.osmdroid.api.IGeoPoint;
@@ -37,6 +41,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -48,6 +53,7 @@ import ca.ubc.cs.cpsc210.meetup.model.CourseFactory;
 import ca.ubc.cs.cpsc210.meetup.model.Section;
 import ca.ubc.cs.cpsc210.meetup.model.Student;
 import ca.ubc.cs.cpsc210.meetup.model.StudentManager;
+import ca.ubc.cs.cpsc210.meetup.parsers.GeoParser;
 import ca.ubc.cs.cpsc210.meetup.util.LatLon;
 import ca.ubc.cs.cpsc210.meetup.util.SchedulePlot;
 
@@ -515,6 +521,8 @@ public class MapDisplayFragment extends Fragment {
         String latLonBuilding1;
         String latLonBuilding2;
 
+        GeoParser geoParser;
+
         @Override
         protected void onPreExecute() {
         }
@@ -531,31 +539,97 @@ public class MapDisplayFragment extends Fragment {
             // schedule. The List<GeoPoint> should be put into
             // scheduleToPlot object.
 
-            List<GeoPoint> geopoints;
+            List<GeoPoint> geoPointsList = new ArrayList<GeoPoint>();
 
             SortedSet<Section> sectionsToPlot = scheduleToPlot.getSections();
 
-            //List<String> latLons = new ArrayList<String>();
-            for (Section s : sectionsToPlot) {
-                double lat;
-                double lon;
-                lat = s.getBuilding().getLatLon().getLatitude();
-                lon = s.getBuilding().getLatLon().getLongitude();
+//            double lat;
+//            double lon;
+//
+//            lat = sectionsToPlot.first().getBuilding().getLatLon().getLatitude();
+//            lon = sectionsToPlot.first().getBuilding().getLatLon().getLongitude();
+//
+//            latLonBuilding1 = lat + "," + lon;
+//
+//            for (Section s : sectionsToPlot) {
+//
+//                lat = s.getBuilding().getLatLon().getLatitude();
+//                lon = s.getBuilding().getLatLon().getLongitude();
+//
+//                latLonBuilding2 = lat + "," + lon;
+//
+//                try {
+//                    makeRoutingCall("http://open.mapquestapi.com/directions/v2/route?key=Fmjtd%7Cluu82lutll%2Cbx%3Do5-948aqz&callback=renderAdvancedNarrative&outFormat=json&routeType=pedestrian&timeType=1&enhancedNarrative=false&shapeFormat=raw&generalize=0&locale=en_US&unit=m&from="
+//                            + latLonBuilding1 + "&to=" + latLonBuilding2 + "&drivingStyle=2&highwayEfficiency=21.0");
+//                } catch (MalformedURLException e) {
+//                    e.printStackTrace();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//
+//            }
 
-                String latLonString1 = lat + "," + lon;
+            Iterator<Section> iter = sectionsToPlot.iterator();
 
+            Section prev = iter.next();
+
+            while(iter.hasNext()) {
+
+                Section next = iter.next();
+
+                String latLon1 = prev.getBuilding().getLatLon().getLatitude() + "," +
+                        prev.getBuilding().getLatLon().getLongitude();
+
+                String latLon2 = next.getBuilding().getLatLon().getLatitude() + "," +
+                        next.getBuilding().getLatLon().getLongitude();
 
                 try {
-                    makeRoutingCall("http://open.mapquestapi.com/directions/v2/route?key=Fmjtd%7Cluu82lutll%2Cbx%3Do5-948aqz&callback=renderAdvancedNarrative&outFormat=json&routeType=pedestrian&timeType=1&enhancedNarrative=false&shapeFormat=raw&generalize=0&locale=en_US&unit=m&from="
-                            + latLonString1 + "&to=" + latLonBuilding2 + "&drivingStyle=2&highwayEfficiency=21.0");
+                    String geoPoints = makeRoutingCall("http://open.mapquestapi.com/directions/v2/route?key=Fmjtd%7Cluu82lutll%2Cbx%3Do5-948aqz&callback=renderAdvancedNarrative&outFormat=json&routeType=pedestrian&timeType=1&enhancedNarrative=false&shapeFormat=raw&generalize=0&locale=en_US&unit=m&from="
+                            + latLon1 + "&to=" + latLon2 + "&drivingStyle=2&highwayEfficiency=21.0");
+
+                    geoPointsList.addAll(geoParser.parse(geoPoints));
+                    scheduleToPlot.setRoute(geoPointsList);
+
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
             }
 
-            return null;
+            return scheduleToPlot;
+
+
+
+
+
+//            for (int i = 0; i < geoPointStrings.size(); i++) {
+//                try {
+//                    JSONTokener tokener = new JSONTokener(geoPointStrings.get(i));
+//
+//                    JSONArray jsonGeoPoints = new JSONArray(tokener);
+//
+//                    for (int j = 0; j < jsonGeoPoints.length(); j++) {
+//
+//                        String[] parts = jsonGeoPoints.getJSONObject(j).toString().split(",");
+//
+//                        double lat = Double.valueOf(parts[0]);
+//                        double lon = Double.valueOf(parts[1]);
+//
+//                        GeoPoint geoPoint = new GeoPoint(lat, lon);
+//                        geoPointsList.add(geoPoint);
+//
+//                    }
+//
+//
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+
+
+            //return null;
         }
 
   
