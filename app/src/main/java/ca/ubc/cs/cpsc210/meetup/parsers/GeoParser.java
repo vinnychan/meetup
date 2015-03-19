@@ -18,9 +18,19 @@ public class GeoParser {
 
     JSONTokener tokener;
     JSONObject object;
-    List<GeoPoint> geoPoints = new ArrayList<GeoPoint>();
+//    List<GeoPoint> lastGeoPoints = new ArrayList<GeoPoint>();
+
+
+//    double lat;
+//    double lon;
+
+    public GeoParser() {
+
+    }
 
     public List<GeoPoint> parse(String input) {
+        List<GeoPoint> geoPoints = new ArrayList<GeoPoint>();
+
 
         tokener = new JSONTokener(input);
         tokener.skipTo('{');
@@ -31,8 +41,8 @@ public class GeoParser {
             JSONObject shape = route.getJSONObject("shape");
             JSONArray shapePoints = shape.getJSONArray("shapePoints");
 
-//            double lat = 0;
-//            double lon;
+
+            //double lon;
 //            for (int i = 0; i < shapePoints.length(); i++) {
 //
 //                if (i % 2 == 0) {
@@ -40,7 +50,9 @@ public class GeoParser {
 //                } else {
 //                    lon = shapePoints.getDouble(i);
 //                    GeoPoint geoPoint = new GeoPoint(lat, lon);
+//                    geoPoints.add(geoPoint);
 //                }
+//
 //
 //            }
 
@@ -53,11 +65,18 @@ public class GeoParser {
                 geoPoints.add(geoPoint);
             }
 
+//            GeoPoint lastGeoPoint = geoPoints.get(geoPoints.size()- 1);
+//            lastGeoPoints.add(lastGeoPoint);
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         return geoPoints;
     }
+
+//    public List<GeoPoint> getLastGeoPoints() {
+//        return lastGeoPoints;
+//    }
 
 }

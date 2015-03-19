@@ -330,7 +330,12 @@ public class MapDisplayFragment extends Fragment {
         // CPSC 210 Students: Complete this method by plotting each building in the
         // schedulePlot with an appropriate message displayed
 
-   
+        for (Section s : schedulePlot.getSections()) {
+            plotABuilding(s.getBuilding(), "Building: " + s.getBuilding().getName(),
+                    s.getCourse().toString() + " " + s.getCourseTime().getStartTime() + " to " +
+                    s.getCourseTime().getEndTime(), R.drawable.ic_action_place);
+        }
+
 
         // CPSC 210 Students: You will need to ensure the buildingOverlay is in
         // the overlayManager. The following code achieves this. You should not likely
@@ -378,10 +383,10 @@ public class MapDisplayFragment extends Fragment {
         studentManager.addStudent("Chan", "Vinny", ME_ID);
         me = studentManager.get(ME_ID);
 
-        studentManager.addSectionToSchedule(ME_ID, "SCIE", 113, "213");
+        studentManager.addSectionToSchedule(ME_ID, "FREN", 102, "202");
         studentManager.addSectionToSchedule(ME_ID, "CPSC", 210, "BCS");
         studentManager.addSectionToSchedule(ME_ID, "ENGL", 222, "007");
-        //studentManager.addSectionToSchedule(ME_ID, "MATH", 200, "201");
+        studentManager.addSectionToSchedule(ME_ID, "SCIE", 113, "213");
         studentManager.addSectionToSchedule(ME_ID, "FNH", 330, "002");
         studentManager.addSectionToSchedule(ME_ID, "BIOL", 201, "201");
 
@@ -522,7 +527,7 @@ public class MapDisplayFragment extends Fragment {
         String latLonBuilding1;
         String latLonBuilding2;
 
-        GeoParser geoParser = new GeoParser();
+
 
         @Override
         protected void onPreExecute() {
@@ -542,63 +547,32 @@ public class MapDisplayFragment extends Fragment {
 
             List<GeoPoint> geoPointsList = new ArrayList<GeoPoint>();
 
+            GeoParser geoParser = new GeoParser();
+
             SortedSet<Section> sectionsToPlot = scheduleToPlot.getSections();
 
-//            double lat;
-//            double lon;
-//
-//            lat = sectionsToPlot.first().getBuilding().getLatLon().getLatitude();
-//            lon = sectionsToPlot.first().getBuilding().getLatLon().getLongitude();
-//
-//            latLonBuilding1 = lat + "," + lon;
-//
-//            Log.i("first section", sectionsToPlot.first().getName());
-//
-//            for (Section s : sectionsToPlot) {
-//
-//                lat = s.getBuilding().getLatLon().getLatitude();
-//                lon = s.getBuilding().getLatLon().getLongitude();
-//
-//                latLonBuilding2 = lat + "," + lon;
-//
-//                try {
-//                    String geoPoints = makeRoutingCall("http://open.mapquestapi.com/directions/v2/route?key=Fmjtd%7Cluu82lutll%2Cbx%3Do5-948aqz&callback=renderAdvancedNarrative&outFormat=json&routeType=pedestrian&timeType=1&enhancedNarrative=false&shapeFormat=raw&generalize=0&locale=en_US&unit=m&from="
-//                            + latLonBuilding1 + "&to=" + latLonBuilding2 + "&drivingStyle=2&highwayEfficiency=21.0");
-//
-//                    geoPointsList.addAll(geoParser.parse(geoPoints));
-//
-//                } catch (MalformedURLException e) {
-//                    e.printStackTrace();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//
-//                latLonBuilding1 = lat + "," + lon;
-//
-//            }
-//            scheduleToPlot.setRoute(geoPointsList);
+            double lat;
+            double lon;
 
+            lat = sectionsToPlot.first().getBuilding().getLatLon().getLatitude();
+            lon = sectionsToPlot.first().getBuilding().getLatLon().getLongitude();
 
-            Iterator<Section> iter = sectionsToPlot.iterator();
+            latLonBuilding1 = lat + "," + lon;
 
-            Section prev = iter.next();
-            String latLon1 = prev.getBuilding().getLatLon().getLatitude() + "," +
-                    prev.getBuilding().getLatLon().getLongitude();
+            Log.i("first section", sectionsToPlot.first().getName());
 
-            while(iter.hasNext()) {
+            for (Section s : sectionsToPlot) {
 
-                prev = iter.next();
+                lat = s.getBuilding().getLatLon().getLatitude();
+                lon = s.getBuilding().getLatLon().getLongitude();
 
-
-                String latLon2 = prev.getBuilding().getLatLon().getLatitude() + "," +
-                        prev.getBuilding().getLatLon().getLongitude();
+                latLonBuilding2 = lat + "," + lon;
 
                 try {
                     String geoPoints = makeRoutingCall("http://open.mapquestapi.com/directions/v2/route?key=Fmjtd%7Cluu82lutll%2Cbx%3Do5-948aqz&callback=renderAdvancedNarrative&outFormat=json&routeType=pedestrian&timeType=1&enhancedNarrative=false&shapeFormat=raw&generalize=0&locale=en_US&unit=m&from="
-                            + latLon1 + "&to=" + latLon2 + "&drivingStyle=2&highwayEfficiency=21.0");
+                            + latLonBuilding1 + "&to=" + latLonBuilding2 + "&drivingStyle=2&highwayEfficiency=21.0");
 
                     geoPointsList.addAll(geoParser.parse(geoPoints));
-
 
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
@@ -606,25 +580,24 @@ public class MapDisplayFragment extends Fragment {
                     e.printStackTrace();
                 }
 
-                latLon1 = latLon2;
+                latLonBuilding1 = latLonBuilding2;
 
             }
             scheduleToPlot.setRoute(geoPointsList);
 
 
-
 //            Iterator<Section> iter = sectionsToPlot.iterator();
 //
 //            Section prev = iter.next();
+//            String latLon1 = prev.getBuilding().getLatLon().getLatitude() + "," +
+//                    prev.getBuilding().getLatLon().getLongitude();
 //
 //            while(iter.hasNext()) {
 //
-//                Section next = iter.next();
+//                prev = iter.next();
 //
-//                String latLon1 = prev.getBuilding().getLatLon().getLatitude() + "," +
+//                String latLon2 = prev.getBuilding().getLatLon().getLatitude() + "," +
 //                        prev.getBuilding().getLatLon().getLongitude();
-//                String latLon2 = next.getBuilding().getLatLon().getLatitude() + "," +
-//                        next.getBuilding().getLatLon().getLongitude();
 //
 //                try {
 //                    String geoPoints = makeRoutingCall("http://open.mapquestapi.com/directions/v2/route?key=Fmjtd%7Cluu82lutll%2Cbx%3Do5-948aqz&callback=renderAdvancedNarrative&outFormat=json&routeType=pedestrian&timeType=1&enhancedNarrative=false&shapeFormat=raw&generalize=0&locale=en_US&unit=m&from="
@@ -639,12 +612,15 @@ public class MapDisplayFragment extends Fragment {
 //                    e.printStackTrace();
 //                }
 //
+//                latLon1 = latLon2;
+//
 //            }
 //            scheduleToPlot.setRoute(geoPointsList);
 
-            for (int k = 0; k < scheduleToPlot.getRoute().size(); k++) {
-                Log.i("Schedule", scheduleToPlot.getRoute().get(k).toString());
-            }
+
+//            for (int k = 0; k < scheduleToPlot.getRoute().size(); k++) {
+//                Log.i("Schedule", scheduleToPlot.getRoute().get(k).toString());
+//            }
 
 
             return scheduleToPlot;
@@ -679,12 +655,15 @@ public class MapDisplayFragment extends Fragment {
             for (int i = 0; i < schedulePlot.getRoute().size(); i++) {
                 po.addPoint(schedulePlot.getRoute().get(i));
             }
-//            po.addPoint(schedulePlot.getRoute().get(0)); // one end of line
-//            po.addPoint(schedulePlot.getRoute().get(6)); // second end of line
+
             scheduleOverlay.add(po);
             OverlayManager om = mapView.getOverlayManager();
             om.addAll(scheduleOverlay);
             mapView.invalidate(); // cause map to redraw
+
+            plotBuildings(schedulePlot);
+
+
 
     
         }
