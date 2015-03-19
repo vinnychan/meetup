@@ -23,6 +23,7 @@ public class GeoParser {
     public List<GeoPoint> parse(String input) {
 
         tokener = new JSONTokener(input);
+        tokener.skipTo('{');
 
         try {
             object = new JSONObject(tokener);

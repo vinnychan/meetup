@@ -521,7 +521,7 @@ public class MapDisplayFragment extends Fragment {
         String latLonBuilding1;
         String latLonBuilding2;
 
-        GeoParser geoParser;
+        GeoParser geoParser = new GeoParser();
 
         @Override
         protected void onPreExecute() {
@@ -598,38 +598,12 @@ public class MapDisplayFragment extends Fragment {
 
             }
 
-            return scheduleToPlot;
-
-
-
-
-
-//            for (int i = 0; i < geoPointStrings.size(); i++) {
-//                try {
-//                    JSONTokener tokener = new JSONTokener(geoPointStrings.get(i));
-//
-//                    JSONArray jsonGeoPoints = new JSONArray(tokener);
-//
-//                    for (int j = 0; j < jsonGeoPoints.length(); j++) {
-//
-//                        String[] parts = jsonGeoPoints.getJSONObject(j).toString().split(",");
-//
-//                        double lat = Double.valueOf(parts[0]);
-//                        double lon = Double.valueOf(parts[1]);
-//
-//                        GeoPoint geoPoint = new GeoPoint(lat, lon);
-//                        geoPointsList.add(geoPoint);
-//
-//                    }
-//
-//
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
+//            for (int k = 0; k < scheduleToPlot.getRoute().size(); k++) {
+//                Log.i("Schedule", scheduleToPlot.getRoute().get(k).toString());
 //            }
 
+            return scheduleToPlot;
 
-            //return null;
         }
 
   
@@ -655,13 +629,17 @@ public class MapDisplayFragment extends Fragment {
 
             // To actually make something show on the map, you can use overlays.
             // For instance, the following code should show a line on a map
-            // PathOverlay po = createPathOverlay("#FFFFFF");
-            // po.addPoint(point1); // one end of line
-            // po.addPoint(point2); // second end of line
-            // scheduleOverlay.add(po);
-            // OverlayManager om = mapView.getOverlayManager();
-            // om.addAll(scheduleOverlay);
-            // mapView.invalidate(); // cause map to redraw
+            PathOverlay po = createPathOverlay("#2980b9");
+
+            for (int i = 0; i < schedulePlot.getRoute().size(); i++) {
+                po.addPoint(schedulePlot.getRoute().get(i));
+            }
+//            po.addPoint(schedulePlot.getRoute().get(0)); // one end of line
+//            po.addPoint(schedulePlot.getRoute().get(6)); // second end of line
+            scheduleOverlay.add(po);
+            OverlayManager om = mapView.getOverlayManager();
+            om.addAll(scheduleOverlay);
+            mapView.invalidate(); // cause map to redraw
 
     
         }
