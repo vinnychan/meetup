@@ -252,9 +252,10 @@ public class MapDisplayFragment extends Fragment {
 
 
         clearSchedules();
-        SortedSet<Section> mySchedule = me.getSchedule().getSections(sharedPreferences.getString(activeDay, "MWF"));
+        activeDay = sharedPreferences.getString("dayOfWeek", "MWF");
+        SortedSet<Section> mySchedule = me.getSchedule().getSections(activeDay);
 
-        SchedulePlot mySchedulePlot = new SchedulePlot(mySchedule, "Vinny", "blue", 1);
+        SchedulePlot mySchedulePlot = new SchedulePlot(mySchedule, "Vinny", "blue", R.drawable.ic_action_place);
 
 
 
@@ -333,7 +334,7 @@ public class MapDisplayFragment extends Fragment {
         for (Section s : schedulePlot.getSections()) {
             plotABuilding(s.getBuilding(), "Building: " + s.getBuilding().getName(),
                     s.getCourse().toString() + " " + s.getCourseTime().getStartTime() + " to " +
-                    s.getCourseTime().getEndTime(), R.drawable.ic_action_place);
+                    s.getCourseTime().getEndTime(), schedulePlot.getIcon());
         }
 
 
