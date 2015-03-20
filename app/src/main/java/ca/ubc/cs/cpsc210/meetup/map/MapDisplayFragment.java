@@ -45,15 +45,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 import ca.ubc.cs.cpsc210.meetup.R;
 import ca.ubc.cs.cpsc210.meetup.model.Building;
 import ca.ubc.cs.cpsc210.meetup.model.Course;
 import ca.ubc.cs.cpsc210.meetup.model.CourseFactory;
+import ca.ubc.cs.cpsc210.meetup.model.Schedule;
 import ca.ubc.cs.cpsc210.meetup.model.Section;
 import ca.ubc.cs.cpsc210.meetup.model.Student;
 import ca.ubc.cs.cpsc210.meetup.model.StudentManager;
 import ca.ubc.cs.cpsc210.meetup.parsers.GeoParser;
+import ca.ubc.cs.cpsc210.meetup.parsers.StudentParser;
 import ca.ubc.cs.cpsc210.meetup.util.LatLon;
 import ca.ubc.cs.cpsc210.meetup.util.SchedulePlot;
 
@@ -250,7 +253,6 @@ public class MapDisplayFragment extends Fragment {
         // and plots the route.
         // Assumes mySchedulePlot is a create and initialized SchedulePlot object
 
-
         clearSchedules();
         activeDay = sharedPreferences.getString("dayOfWeek", "MWF");
         SortedSet<Section> mySchedule = me.getSchedule().getSections(activeDay);
@@ -334,7 +336,7 @@ public class MapDisplayFragment extends Fragment {
         for (Section s : schedulePlot.getSections()) {
             plotABuilding(s.getBuilding(), "Building: " + s.getBuilding().getName(),
                     s.getCourse().toString() + " " + s.getCourseTime().getStartTime() + " to " +
-                    s.getCourseTime().getEndTime(), schedulePlot.getIcon());
+                            s.getCourseTime().getEndTime(), schedulePlot.getIcon());
         }
 
 
@@ -470,7 +472,7 @@ public class MapDisplayFragment extends Fragment {
                 getActivity());
         Paint pathPaint = new Paint();
         pathPaint.setColor(Color.parseColor(colour));
-        pathPaint.setStrokeWidth(4.0f);
+        pathPaint.setStrokeWidth(12.0f);
         pathPaint.setStyle(Paint.Style.STROKE);
         po.setPaint(pathPaint);
         return po;
@@ -487,6 +489,7 @@ public class MapDisplayFragment extends Fragment {
     private class GetRandomSchedule extends AsyncTask<Void, Void, SchedulePlot> {
 
         // Some overview explanation of asynchronous tasks is on the project web page.
+
 
         @Override
         protected void onPreExecute() {
@@ -506,7 +509,86 @@ public class MapDisplayFragment extends Fragment {
             //
             // Note, leave all determination of routing and plotting until
             // the onPostExecute method below.
-        		return null;
+
+            SchedulePlot randSchedulePlot = null;
+            StudentParser studentParser = new StudentParser();
+            SortedSet<Section> sections = new TreeSet<>();
+
+            try {
+                String rndStudent = makeRoutingCall(getStudentURL);
+
+                sections.addAll(studentParser.parse(rndStudent));
+
+                studentManager.addStudent(studentParser.getLastName(), studentParser.getFirstName(), studentParser.getId());
+
+                for (Section c : sections ) {
+                    studentManager.addSectionToSchedule(studentParser.getId(), c.getCourse().getCode(), c.getCourse().getNumber(), c.getName());
+                }
+
+                randomStudent = studentManager.get(studentParser.getId());
+
+                SortedSet<Section> randSchedule = randomStudent.getSchedule().getSections("TR");
+
+                randSchedulePlot = new SchedulePlot(randSchedule, studentParser.getFirstName(), "blue", R.drawable.ic_action_place);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return geoPlotting(randSchedulePlot);
+        }
+
+        private SchedulePlot geoPlotting(SchedulePlot schedulePlot) {
+
+            String latLonBuilding1;
+            String latLonBuilding2;
+            List<GeoPoint> geoPointsList = new ArrayList<GeoPoint>();
+
+            GeoParser geoParser = new GeoParser();
+
+            SortedSet<Section> sectionsToPlot = schedulePlot.getSections();
+
+            double lat;
+            double lon;
+
+            lat = sectionsToPlot.first().getBuilding().getLatLon().getLatitude();
+            lon = sectionsToPlot.first().getBuilding().getLatLon().getLongitude();
+
+            latLonBuilding1 = lat + "," + lon;
+
+            for (Section s : sectionsToPlot) {
+
+                lat = s.getBuilding().getLatLon().getLatitude();
+                lon = s.getBuilding().getLatLon().getLongitude();
+
+                latLonBuilding2 = lat + "," + lon;
+
+                try {
+                    String geoPoints = makeRoutingCall("http://open.mapquestapi.com/directions/v2/route?key=Fmjtd%7Cluu82lutll%2Cbx%3Do5-948aqz&callback=renderAdvancedNarrative&outFormat=json&routeType=pedestrian&timeType=1&enhancedNarrative=false&shapeFormat=raw&generalize=0&locale=en_US&unit=m&from="
+                            + latLonBuilding1 + "&to=" + latLonBuilding2 + "&drivingStyle=2&highwayEfficiency=21.0");
+
+                    geoPointsList.addAll(geoParser.parse(geoPoints));
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                latLonBuilding1 = latLonBuilding2;
+
+            }
+            schedulePlot.setRoute(geoPointsList);
+            return schedulePlot;
+
+        }
+
+        private String makeRoutingCall(String httpRequest) throws MalformedURLException, IOException {
+            URL url = new URL(httpRequest);
+            HttpURLConnection client = (HttpURLConnection) url.openConnection();
+            InputStream in = client.getInputStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            String returnString = br.readLine();
+            client.disconnect();
+            return returnString;
         }
 
         @Override
@@ -515,6 +597,18 @@ public class MapDisplayFragment extends Fragment {
             // whatever schedulePlot object you created (if any) in doBackground
             // above. Use it to plot the route.
 
+            PathOverlay po = createPathOverlay("#c0392b");
+
+            for (int i = 0; i < schedulePlot.getRoute().size(); i++) {
+                po.addPoint(schedulePlot.getRoute().get(i));
+            }
+
+            scheduleOverlay.add(po);
+            OverlayManager om = mapView.getOverlayManager();
+            om.addAll(scheduleOverlay);
+            mapView.invalidate(); // cause map to redraw
+
+            plotBuildings(schedulePlot);
         }
     }
 
@@ -527,8 +621,6 @@ public class MapDisplayFragment extends Fragment {
 
         String latLonBuilding1;
         String latLonBuilding2;
-
-
 
         @Override
         protected void onPreExecute() {
@@ -575,8 +667,6 @@ public class MapDisplayFragment extends Fragment {
 
                     geoPointsList.addAll(geoParser.parse(geoPoints));
 
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

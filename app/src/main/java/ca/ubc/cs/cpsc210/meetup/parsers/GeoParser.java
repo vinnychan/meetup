@@ -16,13 +16,8 @@ import ca.ubc.cs.cpsc210.meetup.model.PlaceFactory;
  */
 public class GeoParser {
 
-    JSONTokener tokener;
-    JSONObject object;
-//    List<GeoPoint> lastGeoPoints = new ArrayList<GeoPoint>();
-
-
-//    double lat;
-//    double lon;
+    private JSONTokener tokener;
+    private JSONObject object;
 
     public GeoParser() {
 
@@ -65,8 +60,7 @@ public class GeoParser {
                 geoPoints.add(geoPoint);
             }
 
-//            GeoPoint lastGeoPoint = geoPoints.get(geoPoints.size()- 1);
-//            lastGeoPoints.add(lastGeoPoint);
+
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -74,9 +68,5 @@ public class GeoParser {
 
         return geoPoints;
     }
-
-//    public List<GeoPoint> getLastGeoPoints() {
-//        return lastGeoPoints;
-//    }
 
 }
