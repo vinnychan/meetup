@@ -95,6 +95,7 @@ public class MapDisplayFragment extends Fragment {
      * CPSC 210 Students: Complete the string.
      */
     private final String getStudentURL = "http://kramer.nss.cs.ubc.ca:8081/getStudent/";
+    private final String getStudentURL_TR = "http://kramer.nss.cs.ubc.ca:8081/getStudentById/444444";
 
     /**
      * FourSquare URLs. You must complete the client_id and client_secret with values
@@ -255,7 +256,7 @@ public class MapDisplayFragment extends Fragment {
         // Assumes mySchedulePlot is a create and initialized SchedulePlot object
 
         clearSchedules();
-        activeDay = sharedPreferences.getString("dayOfWeek", "MWF");
+        activeDay = sharedPreferences.getString("dayOfWeek", activeDay);
         SortedSet<Section> mySchedule = me.getSchedule().getSections(activeDay);
 
         SchedulePlot mySchedulePlot = new SchedulePlot(mySchedule, "Vinny", "blue", R.drawable.ic_action_place);
@@ -534,7 +535,9 @@ public class MapDisplayFragment extends Fragment {
                 try {
                     randSchedule = initializeStudentSections(randomStudent);
                 } catch (NoSectionsFoundException e) {
-                    createSimpleDialog("no classes found");
+                    //createSimpleDialog("no classes found");
+                    Log.i("Random Schedule:", "No schedule found!");
+                    return null;
                 }
 
                 randSchedulePlot = new SchedulePlot(randSchedule, studentParser.getFirstName(), "blue", R.drawable.ic_action_place);
@@ -547,7 +550,7 @@ public class MapDisplayFragment extends Fragment {
         }
 
         private SortedSet<Section> initializeStudentSections(Student student) throws NoSectionsFoundException {
-            if (student.getSchedule().getSections(activeDay) == null) {
+            if (student.getSchedule().getSections(activeDay).size() == 0) {
                 throw new NoSectionsFoundException();
             }
 
@@ -615,6 +618,11 @@ public class MapDisplayFragment extends Fragment {
             // CPSC 210 students: When this method is called, it will be passed
             // whatever schedulePlot object you created (if any) in doBackground
             // above. Use it to plot the route.
+
+            if (schedulePlot == null) {
+                createSimpleDialog("No classes found!").show();
+                return;
+            }
 
             PathOverlay po = createPathOverlay("#c0392b");
 
