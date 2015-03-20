@@ -48,6 +48,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import ca.ubc.cs.cpsc210.meetup.R;
+import ca.ubc.cs.cpsc210.meetup.exceptions.NoSectionsFoundException;
 import ca.ubc.cs.cpsc210.meetup.model.Building;
 import ca.ubc.cs.cpsc210.meetup.model.Course;
 import ca.ubc.cs.cpsc210.meetup.model.CourseFactory;
@@ -527,7 +528,14 @@ public class MapDisplayFragment extends Fragment {
 
                 randomStudent = studentManager.get(studentParser.getId());
 
-                SortedSet<Section> randSchedule = randomStudent.getSchedule().getSections("TR");
+//                SortedSet<Section> randSchedule = randomStudent.getSchedule().getSections(activeDay);
+
+                SortedSet<Section> randSchedule = null;
+                try {
+                    randSchedule = initializeStudentSections(randomStudent);
+                } catch (NoSectionsFoundException e) {
+                    createSimpleDialog("no classes found");
+                }
 
                 randSchedulePlot = new SchedulePlot(randSchedule, studentParser.getFirstName(), "blue", R.drawable.ic_action_place);
 
@@ -536,6 +544,17 @@ public class MapDisplayFragment extends Fragment {
             }
 
             return geoPlotting(randSchedulePlot);
+        }
+
+        private SortedSet<Section> initializeStudentSections(Student student) throws NoSectionsFoundException {
+            if (student.getSchedule().getSections(activeDay) == null) {
+                throw new NoSectionsFoundException();
+            }
+
+            SortedSet<Section> newSched = student.getSchedule().getSections(activeDay);
+
+            return newSched;
+
         }
 
         private SchedulePlot geoPlotting(SchedulePlot schedulePlot) {
