@@ -16,7 +16,11 @@ public class PlaceFactory {
 	// Remember the places with a given name.
 	private Map<String, Set<Place>> places;
 
-	// Singleton
+    public Map<String, Set<Place>> getPlaces() {
+        return places;
+    }
+
+    // Singleton
 	private static PlaceFactory instance = null;
 
 	/**

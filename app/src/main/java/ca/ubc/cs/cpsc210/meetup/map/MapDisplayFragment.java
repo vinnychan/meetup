@@ -52,11 +52,13 @@ import ca.ubc.cs.cpsc210.meetup.exceptions.NoSectionsFoundException;
 import ca.ubc.cs.cpsc210.meetup.model.Building;
 import ca.ubc.cs.cpsc210.meetup.model.Course;
 import ca.ubc.cs.cpsc210.meetup.model.CourseFactory;
+import ca.ubc.cs.cpsc210.meetup.model.PlaceFactory;
 import ca.ubc.cs.cpsc210.meetup.model.Schedule;
 import ca.ubc.cs.cpsc210.meetup.model.Section;
 import ca.ubc.cs.cpsc210.meetup.model.Student;
 import ca.ubc.cs.cpsc210.meetup.model.StudentManager;
 import ca.ubc.cs.cpsc210.meetup.parsers.GeoParser;
+import ca.ubc.cs.cpsc210.meetup.parsers.PlaceParser;
 import ca.ubc.cs.cpsc210.meetup.parsers.StudentParser;
 import ca.ubc.cs.cpsc210.meetup.util.LatLon;
 import ca.ubc.cs.cpsc210.meetup.util.SchedulePlot;
@@ -281,6 +283,7 @@ public class MapDisplayFragment extends Fragment {
         // do this in an asynchronous task. See below in this class for where
         // you need to implement methods for performing the network access
         // and plotting.
+        clearSchedules();
         new GetRandomSchedule().execute();
     }
 
@@ -603,15 +606,7 @@ public class MapDisplayFragment extends Fragment {
 
         }
 
-        private String makeRoutingCall(String httpRequest) throws MalformedURLException, IOException {
-            URL url = new URL(httpRequest);
-            HttpURLConnection client = (HttpURLConnection) url.openConnection();
-            InputStream in = client.getInputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-            String returnString = br.readLine();
-            client.disconnect();
-            return returnString;
-        }
+
 
         @Override
         protected void onPostExecute(SchedulePlot schedulePlot) {
@@ -637,6 +632,16 @@ public class MapDisplayFragment extends Fragment {
 
             plotBuildings(schedulePlot);
         }
+    }
+
+    private String makeRoutingCall(String httpRequest) throws MalformedURLException, IOException {
+        URL url = new URL(httpRequest);
+        HttpURLConnection client = (HttpURLConnection) url.openConnection();
+        InputStream in = client.getInputStream();
+        BufferedReader br = new BufferedReader(new InputStreamReader(in));
+        String returnString = br.readLine();
+        client.disconnect();
+        return returnString;
     }
 
     /**
@@ -736,10 +741,6 @@ public class MapDisplayFragment extends Fragment {
 //            scheduleToPlot.setRoute(geoPointsList);
 
 
-//            for (int k = 0; k < scheduleToPlot.getRoute().size(); k++) {
-//                Log.i("Schedule", scheduleToPlot.getRoute().get(k).toString());
-//            }
-
 
             return scheduleToPlot;
 
@@ -749,15 +750,7 @@ public class MapDisplayFragment extends Fragment {
         /**
          * An example helper method to call a web service
          */
-        private String makeRoutingCall(String httpRequest) throws MalformedURLException, IOException {
-            URL url = new URL(httpRequest);
-            HttpURLConnection client = (HttpURLConnection) url.openConnection();
-            InputStream in = client.getInputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-            String returnString = br.readLine();
-            client.disconnect();
-            return returnString;
-        }
+
 
         @Override
         protected void onPostExecute(SchedulePlot schedulePlot) {
@@ -800,14 +793,34 @@ public class MapDisplayFragment extends Fragment {
             // CPSC 210 Students: Complete this method to retrieve a string
             // of JSON from FourSquare. Return the string from this method
 
-       
-            return null;
+            String jSONOfPlaces = null;
+            String placeURL = "https://api.foursquare.com/v2/venues/explore?" +
+                    "client_id=" + FOUR_SQUARE_CLIENT_ID +
+                    "&client_secret=" + FOUR_SQUARE_CLIENT_SECRET +
+                    "&v=20150315" +
+                    "&ll=" + UBC_MARTHA_PIPER_FOUNTAIN.getLatitude() + "," +
+                    UBC_MARTHA_PIPER_FOUNTAIN.getLongitude() +
+                    "&section=food" +
+                    "&radius=2500" +
+                    "&venuePhotos=1";
+
+            try {
+                jSONOfPlaces = makeRoutingCall(placeURL);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+            return jSONOfPlaces;
         }
 
         protected void onPostExecute(String jSONOfPlaces) {
 
+            PlaceParser placeParser = new PlaceParser();
             // CPSC 210 Students: Given JSON from FourQuest, parse it and load
             // PlaceFactory
+            placeParser.parse(jSONOfPlaces);
+            createSimpleDialog("Added " + PlaceFactory.getInstance().getPlaces().size() + " places").show();
 
       
         }
