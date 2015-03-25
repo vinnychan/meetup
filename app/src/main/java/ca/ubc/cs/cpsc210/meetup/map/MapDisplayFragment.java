@@ -85,6 +85,8 @@ public class MapDisplayFragment extends Fragment {
      * the value of a setting.
      */
     private String activeDay = "MWF";
+    private String activeTime = "10";
+    private String activeDistance = "250";
 
     /**
      * A central location in campus that might be handy.
@@ -98,6 +100,7 @@ public class MapDisplayFragment extends Fragment {
      */
     private final String getStudentURL = "http://kramer.nss.cs.ubc.ca:8081/getStudent/";
     private final String getStudentURL_TR = "http://kramer.nss.cs.ubc.ca:8081/getStudentById/444444";
+    private final String getGetStudentURL_MWF_AFTERNOON = "http://kramer.nss.cs.ubc.ca:8081/getStudentById/333333";
 
     /**
      * FourSquare URLs. You must complete the client_id and client_secret with values
@@ -257,7 +260,7 @@ public class MapDisplayFragment extends Fragment {
         // and plots the route.
         // Assumes mySchedulePlot is a create and initialized SchedulePlot object
 
-        clearSchedules();
+
         activeDay = sharedPreferences.getString("dayOfWeek", activeDay);
         SortedSet<Section> mySchedule = me.getSchedule().getSections(activeDay);
 
@@ -283,7 +286,7 @@ public class MapDisplayFragment extends Fragment {
         // do this in an asynchronous task. See below in this class for where
         // you need to implement methods for performing the network access
         // and plotting.
-        clearSchedules();
+
         new GetRandomSchedule().execute();
     }
 
@@ -315,7 +318,50 @@ public class MapDisplayFragment extends Fragment {
 
         // CPSC 210 students: you must complete this method
 
+        if (randomStudent == null) {
+            createSimpleDialog("Show random student first").show();
+            return;
+        }
+
+        activeTime = sharedPreferences.getString("timeOfDay", activeTime);
+        activeDistance = sharedPreferences.getString("placeDistance", activeDistance);
+
+        Schedule mySchedule = me.getSchedule();
+        Schedule randomSchedule = randomStudent.getSchedule();
+
+        boolean meHasBreak = checkBreak(mySchedule);
+        boolean randomHasBreak = checkBreak(randomSchedule);
+
+        createSimpleDialog("Have break?" + meHasBreak + " // Random has break?" + randomHasBreak).show();
+
         
+    }
+
+    public boolean checkBreak(Schedule schedule) {
+
+        int activeTimeInt = Integer.parseInt(activeTime);
+
+        SortedSet<Section> classes = schedule.getSections(activeDay);
+
+        boolean hasBreak = false;
+        for (Section s : classes)  {
+            if (schedule.startTimeSinceMidnight(s.getCourseTime()) <= activeTimeInt * 60) {
+                if (schedule.startTimeSinceMidnight(s.getCourseTime()) <= activeTimeInt * 60) {
+                    hasBreak = true;
+                }
+            }
+
+            if (schedule.startTimeSinceMidnight(s.getCourseTime()) >= activeTimeInt * 60) {
+                if (schedule.startTimeSinceMidnight(s.getCourseTime()) >= activeTimeInt * 60 + 60) {
+                    hasBreak = true;
+                } else {
+                    hasBreak = false;
+                    break;
+                }
+            }
+        }
+        return hasBreak;
+
     }
 
     /**
@@ -520,7 +566,7 @@ public class MapDisplayFragment extends Fragment {
             SortedSet<Section> sections = new TreeSet<>();
 
             try {
-                String rndStudent = makeRoutingCall(getStudentURL);
+                String rndStudent = makeRoutingCall(getGetStudentURL_MWF_AFTERNOON);
 
                 sections.addAll(studentParser.parse(rndStudent));
 

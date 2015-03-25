@@ -161,6 +161,42 @@ public class Schedule {
 		return (hours * 60) + minutes;
 	}
 
+    //REQUIRES: courseTime to be in HH:MM format
+    //MODIFIES: nothing
+    //EFFECTS: converts course start time to seconds since midnight
+    //         and returns value as integer
+    public int startTimeSinceMidnight(CourseTime time) {
+        int minutesSinceMidnight = 0;
+
+        String startTime = time.getStartTime();
+        String[] parts = startTime.split(":");
+
+        int hour = Integer.valueOf(parts[0]) * 60;
+        int minutes = Integer.valueOf(parts[1]);
+
+        minutesSinceMidnight = hour + minutes;
+
+        return minutesSinceMidnight;
+    }
+
+    //REQUIRES: courseTime to be in HH:MM format
+    //MODIFIES: nothing
+    //EFFECTS: converts course end time to seconds since midnight and returns value
+    //         as integer
+    public int endTimeSinceMidnight(CourseTime time) {
+        int minutesSinceMidnight = 0;
+
+        String endTime = time.getEndTime();
+        String[] parts = endTime.split(":");
+
+        int hour = Integer.valueOf(parts[0]) * 60;
+        int minutes = Integer.valueOf(parts[1]);
+
+        minutesSinceMidnight = hour + minutes;
+
+        return minutesSinceMidnight;
+    }
+
 	/**
 	 * Retrieve the sets for a particular day of the week
      * @param dayOfWeek The day of week of interest, "MWF" or "TR"
