@@ -264,7 +264,7 @@ public class MapDisplayFragment extends Fragment {
         activeDay = sharedPreferences.getString("dayOfWeek", activeDay);
         SortedSet<Section> mySchedule = me.getSchedule().getSections(activeDay);
 
-        SchedulePlot mySchedulePlot = new SchedulePlot(mySchedule, "Vinny", "blue", R.drawable.ic_action_place);
+        SchedulePlot mySchedulePlot = new SchedulePlot(mySchedule, "Vinny", "blue", R.drawable.ic_action_place_blue);
 
 
 
@@ -386,7 +386,8 @@ public class MapDisplayFragment extends Fragment {
 
         for (Section s : schedulePlot.getSections()) {
             plotABuilding(s.getBuilding(), "Building: " + s.getBuilding().getName(),
-                    s.getCourse().toString() + " " + s.getCourseTime().getStartTime() + " to " +
+                    s.getCourse().getCode() + " " + s.getCourse().getNumber() + " "
+                            + s.getCourseTime().getStartTime() + " to " +
                             s.getCourseTime().getEndTime(), schedulePlot.getIcon());
         }
 
@@ -589,7 +590,7 @@ public class MapDisplayFragment extends Fragment {
                     return null;
                 }
 
-                randSchedulePlot = new SchedulePlot(randSchedule, studentParser.getFirstName(), "blue", R.drawable.ic_action_place);
+                randSchedulePlot = new SchedulePlot(randSchedule, studentParser.getFirstName(), "blue", R.drawable.ic_action_place_red);
 
             } catch (IOException e) {
                 e.printStackTrace();
