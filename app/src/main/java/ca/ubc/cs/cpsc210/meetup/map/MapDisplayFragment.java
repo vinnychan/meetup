@@ -41,8 +41,10 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -52,6 +54,7 @@ import ca.ubc.cs.cpsc210.meetup.exceptions.NoSectionsFoundException;
 import ca.ubc.cs.cpsc210.meetup.model.Building;
 import ca.ubc.cs.cpsc210.meetup.model.Course;
 import ca.ubc.cs.cpsc210.meetup.model.CourseFactory;
+import ca.ubc.cs.cpsc210.meetup.model.Place;
 import ca.ubc.cs.cpsc210.meetup.model.PlaceFactory;
 import ca.ubc.cs.cpsc210.meetup.model.Schedule;
 import ca.ubc.cs.cpsc210.meetup.model.Section;
@@ -326,13 +329,60 @@ public class MapDisplayFragment extends Fragment {
         activeTime = sharedPreferences.getString("timeOfDay", activeTime);
         activeDistance = sharedPreferences.getString("placeDistance", activeDistance);
 
+        int activeDistanceInt = Integer.parseInt(activeDistance);
+
+        LatLon marthaPiperLatLon = new LatLon(UBC_MARTHA_PIPER_FOUNTAIN.getLatitude(),
+                UBC_MARTHA_PIPER_FOUNTAIN.getLongitude());
+
+
+
         Schedule mySchedule = me.getSchedule();
         Schedule randomSchedule = randomStudent.getSchedule();
+
+        Building mylastBuilding;
+        Building randomLastBuilding;
+
+        if (mySchedule.whereAmI(activeDay, activeTime) == null) {
+            mylastBuilding = new Building("Martha Piper Fountain", marthaPiperLatLon);
+        } else {
+            mylastBuilding = mySchedule.whereAmI(activeDay, activeTime);
+        }
+
+        if (randomSchedule.whereAmI(activeDay, activeTime) == null) {
+            randomLastBuilding = new Building("Martha Piper Fountain", marthaPiperLatLon);
+        } else {
+            randomLastBuilding = randomSchedule.whereAmI(activeDay, activeTime);
+        }
 
         boolean meHasBreak = checkBreak(mySchedule);
         boolean randomHasBreak = checkBreak(randomSchedule);
 
-        createSimpleDialog("Have break?" + meHasBreak + " // Random has break?" + randomHasBreak).show();
+        Set<Place> meetupPlaces = PlaceFactory.getInstance().findPlacesWithinDistance(mylastBuilding.getLatLon(),
+                activeDistanceInt);
+
+        Set<Place> randomsMeetupPlaces
+                = PlaceFactory.getInstance().findPlacesWithinDistance(randomLastBuilding.getLatLon(),
+                activeDistanceInt);
+
+        Set<Place> overlapingMeetupPlaces = new HashSet<>();
+
+        for (Place p : meetupPlaces) {
+            if (randomsMeetupPlaces.contains(p)) {
+                overlapingMeetupPlaces.add(p);
+            }
+        }
+
+        if (meHasBreak && randomHasBreak) {
+
+            if (meetupPlaces.size() == 0) {
+                createSimpleDialog("Get places first!").show();
+                return;
+            }
+            plotPlaces(overlapingMeetupPlaces);
+
+        } else {
+            createSimpleDialog("You are unable to meetup at this time!").show();
+        }
 
         
     }
@@ -398,6 +448,17 @@ public class MapDisplayFragment extends Fragment {
         OverlayManager om = mapView.getOverlayManager();
         om.add(buildingOverlay);
 
+    }
+
+    // TODO: specification
+    private void plotPlaces(Set<Place> placeSet) {
+        for (Place p : placeSet) {
+            Building b = new Building(p.getName(), p.getLatLon());
+            plotABuilding(b, "Meetup Place: " + p.getName(), "you can meet up here", R.drawable.ic_action_important_green);
+        }
+
+        OverlayManager om = mapView.getOverlayManager();
+        om.add(buildingOverlay);
     }
 
     /**
