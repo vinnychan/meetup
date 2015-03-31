@@ -16,6 +16,9 @@ public class Place extends Location {
     // The name of the place
     private String name;
 
+    private String status;
+    private String rating;
+
     // Tags describing place
     private Set<String> tags;
 
@@ -62,6 +65,22 @@ public class Place extends Location {
 
     public String getName() {
         return name;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getRating() {
+        return rating;
+    }
+
+    public void setRating(String rating) {
+        this.rating = rating;
     }
 
 }

@@ -17,6 +17,7 @@ public class PlaceParser {
     JSONTokener tokener;
     JSONObject object;
 
+
     /**
      * Parse JSON from Foursquare output stored into a file REQUIRES: input is a
      * file with valid data EFFECTS: parsed data is put into PlaceFactory
@@ -36,6 +37,19 @@ public class PlaceParser {
 
 
             for (int i = 0; i < itemArray.length(); i++) {
+                String status;
+                try {
+                    status = itemArray.getJSONObject(i).getJSONObject("venue").getJSONObject("hours").getString("status");
+                } catch(JSONException e) {
+                    status = "No status found";
+                }
+
+                String rating;
+                try {
+                    rating = itemArray.getJSONObject(i).getJSONObject("venue").getString("rating");
+                } catch (JSONException e) {
+                    rating = "No ratings yet";
+                }
                 String name = itemArray.getJSONObject(i).getJSONObject("venue").getString("name");
 
                 double lat = itemArray.getJSONObject(i).getJSONObject("venue").getJSONObject("location")
@@ -43,8 +57,12 @@ public class PlaceParser {
                 double lon = itemArray.getJSONObject(i).getJSONObject("venue").getJSONObject("location")
                         .getDouble("lng");
 
+
                 LatLon latlon = new LatLon(lat, lon);
                 Place place = new EatingPlace(name, latlon);
+
+                place.setStatus(status);
+                place.setRating(rating);
 
                 PlaceFactory places = PlaceFactory.getInstance();
                 places.add(place);
@@ -55,4 +73,5 @@ public class PlaceParser {
         }
 
     }
+
 }

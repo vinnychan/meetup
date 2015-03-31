@@ -38,4 +38,11 @@
         <item name="1000">1000</item>
         <item name="2000">2000</item>
     </string-array>
+
+    <string-array name="foodOptions">
+        <item name="chinese">Chinese</item>
+        <item name="japanese">Japanese</item>
+        <item name="coffee">Coffee</item>
+    </string-array>
+
 </resources>

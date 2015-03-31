@@ -6,6 +6,8 @@ import android.app.Fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
@@ -16,6 +18,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -103,7 +106,7 @@ public class MapDisplayFragment extends Fragment {
      */
     private final String getStudentURL = "http://kramer.nss.cs.ubc.ca:8081/getStudent/";
     private final String getStudentURL_TR = "http://kramer.nss.cs.ubc.ca:8081/getStudentById/444444";
-    private final String getGetStudentURL_MWF_AFTERNOON = "http://kramer.nss.cs.ubc.ca:8081/getStudentById/333333";
+    private final String getStudentURL_MWF_AFTERNOON = "http://kramer.nss.cs.ubc.ca:8081/getStudentById/333333";
 
     /**
      * FourSquare URLs. You must complete the client_id and client_secret with values
@@ -378,7 +381,14 @@ public class MapDisplayFragment extends Fragment {
                 createSimpleDialog("Get places first!").show();
                 return;
             }
+
+            if (overlapingMeetupPlaces.size() == 0) {
+                createSimpleDialog("No places you are willing to walk to!").show();
+                return;
+            }
+
             plotPlaces(overlapingMeetupPlaces);
+          
 
         } else {
             createSimpleDialog("You are unable to meetup at this time!").show();
@@ -421,6 +431,7 @@ public class MapDisplayFragment extends Fragment {
         // CPSC 210 Students: You should not need to touch this method, but
         // you will have to implement GetPlaces below.
         new GetPlaces().execute();
+
     }
 
 
@@ -454,7 +465,7 @@ public class MapDisplayFragment extends Fragment {
     private void plotPlaces(Set<Place> placeSet) {
         for (Place p : placeSet) {
             Building b = new Building(p.getName(), p.getLatLon());
-            plotABuilding(b, "Meetup Place: " + p.getName(), "you can meet up here", R.drawable.ic_action_important_green);
+            plotABuilding(b, "Meetup Place: " + p.getName(), "Status: " + p.getStatus() + "\nRating: " + p.getRating(), R.drawable.ic_action_important_green);
         }
 
         OverlayManager om = mapView.getOverlayManager();
@@ -508,6 +519,8 @@ public class MapDisplayFragment extends Fragment {
 
     }
 
+
+
     /**
      * Helper to create simple alert dialog to display message
      *
@@ -516,8 +529,32 @@ public class MapDisplayFragment extends Fragment {
      */
     private AlertDialog createSimpleDialog(String msg) {
         // CPSC 210 Students; You should not need to modify this method
+
+
         AlertDialog.Builder dialogBldr = new AlertDialog.Builder(getActivity());
         dialogBldr.setMessage(msg);
+        dialogBldr.setNeutralButton(R.string.ok, null);
+
+        return dialogBldr.create();
+    }
+
+    //TODO: Place Dialog Specifications
+    private AlertDialog createImageDialog(String msg) {
+
+
+        AlertDialog.Builder dialogBldr = new AlertDialog.Builder(getActivity());
+        dialogBldr.setMessage(msg);
+
+        LayoutInflater factory = LayoutInflater.from(this.getActivity());
+        final View view = factory.inflate(R.layout.dialog_main, null);
+
+        new DownloadImageTask((ImageView) view.findViewById(R.id.dialog_image)).execute("http://vinnychan.me/img/ch.png");
+
+//        ImageView image = (ImageView) view.findViewById(R.id.dialog_image);
+//        image.setImageResource(R.drawable.ic_action_important_green);
+
+        dialogBldr.setView(view);
+
         dialogBldr.setNeutralButton(R.string.ok, null);
 
         return dialogBldr.create();
@@ -546,16 +583,23 @@ public class MapDisplayFragment extends Fragment {
             @Override
             public boolean onItemSingleTapUp(int index, OverlayItem oi) {
 
-                new AlertDialog.Builder(getActivity())
-                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface arg0, int arg1) {
-                                if (selectedBuildingOnMap != null) {
-                                    mapView.invalidate();
+                if (oi.getTitle().contains("Meetup")) {
+                    AlertDialog imageDialog = createImageDialog(oi.getSnippet());
+                    imageDialog.setTitle(oi.getTitle());
+                    imageDialog.show();
+                } else {
+
+                    new AlertDialog.Builder(getActivity())
+                            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface arg0, int arg1) {
+                                    if (selectedBuildingOnMap != null) {
+                                        mapView.invalidate();
+                                    }
                                 }
-                            }
-                        }).setTitle(oi.getTitle()).setMessage(oi.getSnippet())
-                        .show();
+                            }).setTitle(oi.getTitle()).setMessage(oi.getSnippet())
+                            .show();
+                }
 
                 selectedBuildingOnMap = oi;
                 mapView.invalidate();
@@ -628,7 +672,7 @@ public class MapDisplayFragment extends Fragment {
             SortedSet<Section> sections = new TreeSet<>();
 
             try {
-                String rndStudent = makeRoutingCall(getGetStudentURL_MWF_AFTERNOON);
+                String rndStudent = makeRoutingCall(getStudentURL);
 
                 sections.addAll(studentParser.parse(rndStudent));
 
@@ -640,13 +684,11 @@ public class MapDisplayFragment extends Fragment {
 
                 randomStudent = studentManager.get(studentParser.getId());
 
-//                SortedSet<Section> randSchedule = randomStudent.getSchedule().getSections(activeDay);
 
                 SortedSet<Section> randSchedule = null;
                 try {
                     randSchedule = initializeStudentSections(randomStudent);
                 } catch (NoSectionsFoundException e) {
-                    //createSimpleDialog("no classes found");
                     Log.i("Random Schedule:", "No schedule found!");
                     return null;
                 }
@@ -727,7 +769,7 @@ public class MapDisplayFragment extends Fragment {
                 return;
             }
 
-            PathOverlay po = createPathOverlay("#c0392b");
+            PathOverlay po = createPathOverlay("#80c0392b");
 
             for (int i = 0; i < schedulePlot.getRoute().size(); i++) {
                 po.addPoint(schedulePlot.getRoute().get(i));
@@ -869,7 +911,7 @@ public class MapDisplayFragment extends Fragment {
 
             // To actually make something show on the map, you can use overlays.
             // For instance, the following code should show a line on a map
-            PathOverlay po = createPathOverlay("#2980b9");
+            PathOverlay po = createPathOverlay("#802980b9");
 
             for (int i = 0; i < schedulePlot.getRoute().size(); i++) {
                 po.addPoint(schedulePlot.getRoute().get(i));
@@ -931,6 +973,36 @@ public class MapDisplayFragment extends Fragment {
             createSimpleDialog("Added " + PlaceFactory.getInstance().getPlaces().size() + " places").show();
 
       
+        }
+    }
+
+    //TODO: Async task specification
+    /**
+     * Asynchronous task to load venue photos from FourSquare
+     */
+
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView image;
+
+        public DownloadImageTask(ImageView image) {
+            this.image = image;
+        }
+
+        @Override
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap bm = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                bm = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return bm;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            image.setImageBitmap(result);
         }
     }
 

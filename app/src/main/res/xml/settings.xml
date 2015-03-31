@@ -23,4 +23,6 @@
             android:defaultValue="closest_stop_me"
             android:summary="Set how close of the meetup place should be"
             android:title="Place Distance Options" />
+
+
 </PreferenceScreen>
