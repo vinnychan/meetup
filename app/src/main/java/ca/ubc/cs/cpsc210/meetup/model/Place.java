@@ -18,6 +18,8 @@ public class Place extends Location {
 
     private String status;
     private String rating;
+    private String url;
+
 
     // Tags describing place
     private Set<String> tags;
@@ -81,6 +83,14 @@ public class Place extends Location {
 
     public void setRating(String rating) {
         this.rating = rating;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
 }

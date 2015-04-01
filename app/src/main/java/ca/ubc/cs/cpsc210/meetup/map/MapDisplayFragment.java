@@ -74,6 +74,7 @@ import ca.ubc.cs.cpsc210.meetup.util.SchedulePlot;
  */
 public class MapDisplayFragment extends Fragment {
 
+    String url;
     /**
      * Log tag for LogCat messages
      */
@@ -466,6 +467,7 @@ public class MapDisplayFragment extends Fragment {
         for (Place p : placeSet) {
             Building b = new Building(p.getName(), p.getLatLon());
             plotABuilding(b, "Meetup Place: " + p.getName(), "Status: " + p.getStatus() + "\nRating: " + p.getRating(), R.drawable.ic_action_important_green);
+            //url = p.getUrl();
         }
 
         OverlayManager om = mapView.getOverlayManager();
@@ -539,7 +541,8 @@ public class MapDisplayFragment extends Fragment {
     }
 
     //TODO: Place Dialog Specifications
-    private AlertDialog createImageDialog(String msg) {
+    private AlertDialog createImageDialog(String msg, String url) {
+
 
 
         AlertDialog.Builder dialogBldr = new AlertDialog.Builder(getActivity());
@@ -548,7 +551,7 @@ public class MapDisplayFragment extends Fragment {
         LayoutInflater factory = LayoutInflater.from(this.getActivity());
         final View view = factory.inflate(R.layout.dialog_main, null);
 
-        new DownloadImageTask((ImageView) view.findViewById(R.id.dialog_image)).execute("http://vinnychan.me/img/ch.png");
+        new DownloadImageTask((ImageView) view.findViewById(R.id.dialog_image)).execute(url);
 
 //        ImageView image = (ImageView) view.findViewById(R.id.dialog_image);
 //        image.setImageResource(R.drawable.ic_action_important_green);
@@ -584,7 +587,15 @@ public class MapDisplayFragment extends Fragment {
             public boolean onItemSingleTapUp(int index, OverlayItem oi) {
 
                 if (oi.getTitle().contains("Meetup")) {
-                    AlertDialog imageDialog = createImageDialog(oi.getSnippet());
+
+                    PlaceFactory placeFactory = PlaceFactory.getInstance();
+                    Set<Place> places = placeFactory.get(oi.getTitle().substring(14));
+                    String link = "http://vinnychan.me/img/ch.png";
+                    for (Place p : places) {
+                        link = p.getUrl();
+                    }
+
+                    AlertDialog imageDialog = createImageDialog(oi.getSnippet(), link);
                     imageDialog.setTitle(oi.getTitle());
                     imageDialog.show();
                 } else {
