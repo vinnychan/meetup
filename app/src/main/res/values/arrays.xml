@@ -40,6 +40,7 @@
     </string-array>
 
     <string-array name="foodOptions">
+        <item name="all">All</item>
         <item name="chinese">Chinese</item>
         <item name="japanese">Japanese</item>
         <item name="coffee">Coffee</item>
