@@ -57,24 +57,32 @@ public class PlaceParser {
                 double lon = itemArray.getJSONObject(i).getJSONObject("venue").getJSONObject("location")
                         .getDouble("lng");
 
-//                JSONObject photos = itemArray.getJSONObject(i).getJSONObject("venue").getJSONObject("photos");
-//                JSONArray photoArray = photos.getJSONArray("groups").getJSONObject(0).getJSONArray("items");
-
-                JSONObject photos = itemArray.getJSONObject(i).getJSONObject("venue").getJSONObject("featuredPhotos");
-                JSONArray photoArray = photos.getJSONArray("items");
-
-                String prefix = photoArray.getJSONObject(0).getString("prefix");
-                String suffix = photoArray.getJSONObject(0).getString("suffix");
-
-                prefix = prefix.replaceAll("\\\\", "");
-                suffix = suffix.replaceAll("\\\\", "");
-
                 LatLon latlon = new LatLon(lat, lon);
                 Place place = new EatingPlace(name, latlon);
 
+                String prefix;
+                String suffix;
+                String url;
+                try {
+                    JSONObject photos = itemArray.getJSONObject(i).getJSONObject("venue").getJSONObject("featuredPhotos");
+                    JSONArray photoArray = photos.getJSONArray("items");
+
+                    prefix = photoArray.getJSONObject(0).getString("prefix");
+                    suffix = photoArray.getJSONObject(0).getString("suffix");
+
+                    prefix = prefix.replaceAll("\\\\", "");
+                    suffix = suffix.replaceAll("\\\\", "");
+
+                    url = prefix + "width500" + suffix;
+                } catch (JSONException e) {
+                   url = "http://vinnychan.me/img/ch.png";
+                }
+
+
+
                 place.setStatus(status);
                 place.setRating(rating);
-                place.setUrl(prefix + "width500" + suffix);
+                place.setUrl(url);
 
                 PlaceFactory places = PlaceFactory.getInstance();
                 places.add(place);

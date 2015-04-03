@@ -278,13 +278,9 @@ public class MapDisplayFragment extends Fragment {
         SchedulePlot mySchedulePlot = new SchedulePlot(mySchedule, "Vinny", "blue", R.drawable.ic_action_place_blue);
 
 
-
-
-
         // UNCOMMENT NEXT LINE ONCE YOU HAVE INSTANTIATED mySchedulePlot
         new GetRoutingForSchedule().execute(mySchedulePlot);
 
-        GPSTesting();
     }
 
     /**
@@ -338,6 +334,11 @@ public class MapDisplayFragment extends Fragment {
 
         activeTime = sharedPreferences.getString("timeOfDay", activeTime);
         activeDistance = sharedPreferences.getString("placeDistance", activeDistance);
+
+        if (activeDistance.equals("closest_stop_me")) {
+            createSimpleDialog("Choose a meeting distance in settings first").show();
+            return;
+        }
 
         int activeDistanceInt = Integer.parseInt(activeDistance);
 
@@ -413,9 +414,7 @@ public class MapDisplayFragment extends Fragment {
         boolean hasBreak = false;
         for (Section s : classes)  {
             if (schedule.startTimeSinceMidnight(s.getCourseTime()) <= activeTimeInt * 60) {
-                if (schedule.startTimeSinceMidnight(s.getCourseTime()) <= activeTimeInt * 60) {
-                    hasBreak = true;
-                }
+                hasBreak = true;
             }
 
             if (schedule.startTimeSinceMidnight(s.getCourseTime()) >= activeTimeInt * 60) {
@@ -473,7 +472,7 @@ public class MapDisplayFragment extends Fragment {
         for (Place p : placeSet) {
             Building b = new Building(p.getName(), p.getLatLon());
             plotABuilding(b, "Meetup Place: " + p.getName(), "Status: " + p.getStatus() + "\nRating: " + p.getRating(), R.drawable.ic_action_important_green);
-            //url = p.getUrl();
+
         }
 
         OverlayManager om = mapView.getOverlayManager();
@@ -549,8 +548,6 @@ public class MapDisplayFragment extends Fragment {
     //TODO: Place Dialog Specifications
     private AlertDialog createImageDialog(String msg, String url) {
 
-
-
         AlertDialog.Builder dialogBldr = new AlertDialog.Builder(getActivity());
         dialogBldr.setMessage(msg);
 
@@ -558,9 +555,6 @@ public class MapDisplayFragment extends Fragment {
         final View view = factory.inflate(R.layout.dialog_main, null);
 
         new DownloadImageTask((ImageView) view.findViewById(R.id.dialog_image)).execute(url);
-
-//        ImageView image = (ImageView) view.findViewById(R.id.dialog_image);
-//        image.setImageResource(R.drawable.ic_action_important_green);
 
         dialogBldr.setView(view);
 
@@ -1061,7 +1055,7 @@ public class MapDisplayFragment extends Fragment {
         }
     }
 
-    private void GPSTesting() {
+    public void GPSTesting() {
         String provider = LocationManager.GPS_PROVIDER;
         final LocationManager locationManager = (LocationManager) this.getActivity().getSystemService(Context.LOCATION_SERVICE);
 

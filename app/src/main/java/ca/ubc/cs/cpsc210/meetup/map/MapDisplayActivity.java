@@ -35,7 +35,7 @@ public class MapDisplayActivity extends Activity {
 
 
     private String[] menuItems = {"Clear", "Show My Schedule", "Get Random Schedule", "Find Meetup Place",
-            "Get Places", "Settings"};
+            "Current Location", "Get Places", "Settings"};
 
 
     @Override
@@ -109,11 +109,16 @@ public class MapDisplayActivity extends Activity {
                 fragment.findMeetupPlace();
                 break;
             case 4:
+                // Get GPS location
+                Log.d(LOG_TAG, "Get GPS location!");
+                fragment.GPSTesting();
+                break;
+            case 5:
                 // Get places
                 Log.d(LOG_TAG, "Initialize places");
                 fragment.initializePlaces();
                 break;
-            case 5:
+            case 6:
                 // Settings
                 startActivityForResult(new Intent(this, SettingsActivity.class),1);
                 break;
@@ -169,9 +174,12 @@ public class MapDisplayActivity extends Activity {
                     icon.setImageResource(R.drawable.ic_action_place);
                     break;
                 case 4:
-                    icon.setImageResource(R.drawable.ic_action_place);
+                    icon.setImageResource(R.drawable.ic_action_place_red);
                     break;
                 case 5:
+                    icon.setImageResource(R.drawable.ic_action_place);
+                    break;
+                case 6:
                     icon.setImageResource(R.drawable.ic_action_settings);
                     break;
             }
