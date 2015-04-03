@@ -75,7 +75,7 @@ public class PlaceParser {
 
                     url = prefix + "width500" + suffix;
                 } catch (JSONException e) {
-                   url = "http://vinnychan.me/img/ch.png";
+                   url = "http://i.imgur.com/7iPPiiy.gif";
                 }
 
 
