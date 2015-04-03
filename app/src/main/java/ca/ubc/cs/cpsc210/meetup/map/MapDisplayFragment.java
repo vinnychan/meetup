@@ -78,7 +78,7 @@ import ca.ubc.cs.cpsc210.meetup.util.SchedulePlot;
  */
 public class MapDisplayFragment extends Fragment {
 
-    String url;
+
     /**
      * Log tag for LogCat messages
      */
@@ -104,6 +104,10 @@ public class MapDisplayFragment extends Fragment {
      */
     private final static GeoPoint UBC_MARTHA_PIPER_FOUNTAIN = new GeoPoint(49.264865,
             -123.252782);
+
+    private LatLon selectedLatLon;
+    private double myLat = 49.2611817;
+    private double myLon = -123.2488201;
 
     /**
      * Meetup Service URL
@@ -590,9 +594,11 @@ public class MapDisplayFragment extends Fragment {
 
                     PlaceFactory placeFactory = PlaceFactory.getInstance();
                     Set<Place> places = placeFactory.get(oi.getTitle().substring(14));
-                    String link = "http://vinnychan.me/img/ch.png";
+                    String link = "http://i.imgur.com/7iPPiiy.gif";
                     for (Place p : places) {
                         link = p.getUrl();
+                        selectedLatLon = p.getLatLon();
+                        Log.i("Selected LatLon:", selectedLatLon.getLatitude() + "" + selectedLatLon.getLongitude());
                     }
 
                     AlertDialog imageDialog = createImageDialog(oi.getSnippet(), link);
@@ -1017,58 +1023,74 @@ public class MapDisplayFragment extends Fragment {
         }
     }
 
-    private class GetRoutingToPlace extends AsyncTask<GeoPoint, Void, List<GeoPoint>> {
-
-        String provider = LocationManager.GPS_PROVIDER;
-        LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-
-        LocationListener locationListener = new LocationListener() {
-
-            @Override
-            public void onLocationChanged(Location location) {
-                double lat = location.getLatitude();
-                double lon = location.getLongitude();
-                Log.i("LOCATION LATITUDE", "" + lat);
-                Log.i("LOCATION LONGITUDE", "" + lon);
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-
-            }
-
-            @Override
-            public void onProviderEnabled(String provider) {
-
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-
-            }
-        };
-
+    private class GetRoutingToPlace extends AsyncTask<Void, Void, List<GeoPoint>> {
 
         @Override
-        protected List<GeoPoint> doInBackground(GeoPoint... params) {
-            return null;
+        protected List<GeoPoint> doInBackground(Void... params) {
+
+            double lt = selectedLatLon.getLatitude();
+            double ln = selectedLatLon.getLongitude();
+
+            String latLonPlace = lt + "," + ln;
+            String myLatLon = myLat + "," + myLon;
+
+            List<GeoPoint> geoPointsList = new ArrayList<GeoPoint>();
+            GeoParser geoParser = new GeoParser();
+
+            try {
+                String geoPoints = makeRoutingCall("http://open.mapquestapi.com/directions/v2/route?key=Fmjtd%7Cluu82lutll%2Cbx%3Do5-948aqz&callback=renderAdvancedNarrative&outFormat=json&routeType=pedestrian&timeType=1&enhancedNarrative=false&shapeFormat=raw&generalize=0&locale=en_US&unit=m&from="
+                        + myLatLon + "&to=" + latLonPlace + "&drivingStyle=2&highwayEfficiency=21.0");
+
+                Log.i("GPSROUTING: ", "http://open.mapquestapi.com/directions/v2/route?key=Fmjtd%7Cluu82lutll%2Cbx%3Do5-948aqz&callback=renderAdvancedNarrative&outFormat=json&routeType=pedestrian&timeType=1&enhancedNarrative=false&shapeFormat=raw&generalize=0&locale=en_US&unit=m&from="
+                        + myLatLon + "&to=" + latLonPlace + "&drivingStyle=2&highwayEfficiency=21.0");
+
+                geoPointsList.addAll(geoParser.parse(geoPoints));
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return geoPointsList;
+        }
+
+
+        protected void onPostExecute(List<GeoPoint> geoPoints) {
+            PathOverlay po = createPathOverlay("#8027ae60");
+
+            for (GeoPoint g : geoPoints) {
+                po.addPoint(g);
+            }
+
+            scheduleOverlay.add(po);
+            OverlayManager om = mapView.getOverlayManager();
+            om.addAll(scheduleOverlay);
+            mapView.invalidate(); // cause map to redraw
+
         }
     }
 
-    public void GPSTesting() {
+    public void showRouteToPlace() {
+
+        if (selectedLatLon == null) {
+            createSimpleDialog("Select a meetup place first!").show();
+            return;
+        }
+        new GetRoutingToPlace().execute();
+    }
+
+    public void currentLocation() {
         String provider = LocationManager.GPS_PROVIDER;
         final LocationManager locationManager = (LocationManager) this.getActivity().getSystemService(Context.LOCATION_SERVICE);
-
-
 
         LocationListener locationListener = new LocationListener() {
 
             @Override
             public void onLocationChanged(Location location) {
-                double lat = location.getLatitude();
-                double lon = location.getLongitude();
-                Log.i("LOCATION LATITUDE", "" + lat);
-                Log.i("LOCATION LONGITUDE", "" + lon);
+                myLat = location.getLatitude();
+                myLon = location.getLongitude();
+
+                Log.i("LOCATION LATITUDE", "" + myLat);
+                Log.i("LOCATION LONGITUDE", "" + myLon);
             }
 
             @Override
@@ -1087,7 +1109,7 @@ public class MapDisplayFragment extends Fragment {
             }
         };
 
-        locationManager.requestLocationUpdates(provider, 1000, 0, locationListener);
+        locationManager.requestLocationUpdates(provider, 1000, 1, locationListener);
 
 
     }

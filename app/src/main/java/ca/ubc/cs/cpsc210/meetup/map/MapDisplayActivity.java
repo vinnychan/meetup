@@ -35,7 +35,7 @@ public class MapDisplayActivity extends Activity {
 
 
     private String[] menuItems = {"Clear", "Show My Schedule", "Get Random Schedule", "Find Meetup Place",
-            "Current Location", "Get Places", "Settings"};
+            "Route to Meetup", "Get Places", "Settings"};
 
 
     @Override
@@ -107,11 +107,12 @@ public class MapDisplayActivity extends Activity {
                 // Find place
                 Log.d(LOG_TAG, "Find place to meetup!");
                 fragment.findMeetupPlace();
+                fragment.currentLocation();
                 break;
             case 4:
                 // Get GPS location
-                Log.d(LOG_TAG, "Get GPS location!");
-                fragment.GPSTesting();
+                Log.d(LOG_TAG, "Show route to meeup!");
+                fragment.showRouteToPlace();
                 break;
             case 5:
                 // Get places
