@@ -24,5 +24,12 @@
             android:summary="Set how close of the meetup place should be"
             android:title="Place Distance Options" />
 
+    <EditTextPreference
+        android:key="searchValue"
+        android:title="Search"
+        android:summary="Search places you want to meetup"
+        android:dialogTitle="Type of food or drink"
+        />
+
 
 </PreferenceScreen>
