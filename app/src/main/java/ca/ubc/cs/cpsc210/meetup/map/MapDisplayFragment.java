@@ -106,8 +106,8 @@ public class MapDisplayFragment extends Fragment {
             -123.252782);
 
     private LatLon selectedLatLon;
-    private double myLat = 49.2611817;
-    private double myLon = -123.2488201;
+    private double myLat = 0;
+    private double myLon = 0;
 
     /**
      * Meetup Service URL
@@ -1073,6 +1073,11 @@ public class MapDisplayFragment extends Fragment {
 
         if (selectedLatLon == null) {
             createSimpleDialog("Select a meetup place first!").show();
+            return;
+        }
+
+        if (myLat == 0 || myLon == 0) {
+            createSimpleDialog("Wait for GPS location").show();
             return;
         }
         new GetRoutingToPlace().execute();
