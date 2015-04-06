@@ -25,7 +25,8 @@
             android:title="Place Distance Options" />
 
     <EditTextPreference
-        android:key="searchValue"
+        android:key="searchItem"
+        android:defaultValue="food"
         android:title="Search"
         android:summary="Search places you want to meetup"
         android:dialogTitle="Type of food or drink"

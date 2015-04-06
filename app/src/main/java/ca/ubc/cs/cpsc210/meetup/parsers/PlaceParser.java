@@ -1,5 +1,8 @@
 package ca.ubc.cs.cpsc210.meetup.parsers;
 
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,13 +21,26 @@ public class PlaceParser {
     JSONObject object;
 
 
+
     /**
      * Parse JSON from Foursquare output stored into a file REQUIRES: input is a
      * file with valid data EFFECTS: parsed data is put into PlaceFactory
      */
 
 
-    public void parse(String input) {
+    public void parse(String input, String searchTag) {
+
+
+//        sharedPreferences = PreferenceManager
+//                .getDefaultSharedPreferences();
+//
+//        String searchTag;
+//        try {
+//            searchTag = sharedPreferences.getString("searchItem", "food").trim();
+//        } catch (NullPointerException e) {
+//            searchTag = "food";
+//        }
+
 
         tokener = new JSONTokener(input);
 
@@ -83,6 +99,8 @@ public class PlaceParser {
                 place.setStatus(status);
                 place.setRating(rating);
                 place.setUrl(url);
+                place.addTag(searchTag.toLowerCase());
+                place.containsTag(searchTag);
 
                 PlaceFactory places = PlaceFactory.getInstance();
                 places.add(place);

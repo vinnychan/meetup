@@ -17,11 +17,13 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 import org.json.JSONArray;
@@ -98,6 +100,10 @@ public class MapDisplayFragment extends Fragment {
     private String activeDay = "MWF";
     private String activeTime = "10";
     private String activeDistance = "250";
+    private String search = "food";
+
+
+
 
     /**
      * A central location in campus that might be handy.
@@ -279,6 +285,7 @@ public class MapDisplayFragment extends Fragment {
         activeDay = sharedPreferences.getString("dayOfWeek", activeDay);
         SortedSet<Section> mySchedule = me.getSchedule().getSections(activeDay);
 
+
         SchedulePlot mySchedulePlot = new SchedulePlot(mySchedule, "Vinny", "blue", R.drawable.ic_action_place_blue);
 
 
@@ -338,6 +345,7 @@ public class MapDisplayFragment extends Fragment {
 
         activeTime = sharedPreferences.getString("timeOfDay", activeTime);
         activeDistance = sharedPreferences.getString("placeDistance", activeDistance);
+        search = sharedPreferences.getString("searchItem", search);
 
         if (activeDistance.equals("closest_stop_me")) {
             createSimpleDialog("Choose a meeting distance in settings first").show();
@@ -387,6 +395,13 @@ public class MapDisplayFragment extends Fragment {
             }
         }
 
+        Set<Place> filteredPlaces = new HashSet<>();
+        for (Place p : overlapingMeetupPlaces) {
+            if (p.containsTag(search)) {
+                filteredPlaces.add(p);
+            }
+        }
+
         if (meHasBreak && randomHasBreak) {
 
             if (meetupPlaces.size() == 0) {
@@ -399,7 +414,7 @@ public class MapDisplayFragment extends Fragment {
                 return;
             }
 
-            plotPlaces(overlapingMeetupPlaces);
+            plotPlaces(filteredPlaces);
           
 
         } else {
@@ -955,6 +970,10 @@ public class MapDisplayFragment extends Fragment {
      */
     private class GetPlaces extends AsyncTask<Void, Void, String> {
 
+        String search = sharedPreferences.getString("searchItem", "food").trim();
+        //EditText field = pref.getEditText();
+        //String search = field.toString();
+
         protected String doInBackground(Void... params) {
 
             // CPSC 210 Students: Complete this method to retrieve a string
@@ -967,7 +986,7 @@ public class MapDisplayFragment extends Fragment {
                     "&v=20150315" +
                     "&ll=" + UBC_MARTHA_PIPER_FOUNTAIN.getLatitude() + "," +
                     UBC_MARTHA_PIPER_FOUNTAIN.getLongitude() +
-                    "&section=food" +
+                    "&query=" + search +
                     "&radius=2500" +
                     "&venuePhotos=1";
 
@@ -986,8 +1005,12 @@ public class MapDisplayFragment extends Fragment {
             PlaceParser placeParser = new PlaceParser();
             // CPSC 210 Students: Given JSON from FourQuest, parse it and load
             // PlaceFactory
-            placeParser.parse(jSONOfPlaces);
-            createSimpleDialog("Added " + PlaceFactory.getInstance().getPlaces().size() + " places").show();
+            placeParser.parse(jSONOfPlaces, search);
+
+            Set<Place> filteredPlaces = PlaceFactory.getInstance().findPlacesWithTag(search.toLowerCase());
+
+            //createSimpleDialog("There are " + PlaceFactory.getInstance().getPlaces().size() + " places to meet!").show();
+            createSimpleDialog("There are " + filteredPlaces.size() + " places to meet!").show();
 
       
         }

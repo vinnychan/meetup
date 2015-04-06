@@ -86,4 +86,15 @@ public class PlaceFactory {
         return returnSet;
     }
 
+    public Set<Place> findPlacesWithTag(String tag) {
+        Set<Place> returnSet = new HashSet<Place>();
+        for (Set<Place> aSetOfPlaces: places.values()) {
+            for (Place aPlace: aSetOfPlaces) {
+                if (aPlace.containsTag(tag.toLowerCase()))
+                    returnSet.add(aPlace);
+            }
+        }
+        return returnSet;
+    }
+
 }

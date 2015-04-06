@@ -50,7 +50,7 @@ public class Place extends Location {
      * @param tag The tag to add, non-null
      */
     public void addTag(String tag) {
-        tags.add(tag);
+        tags.add(tag.toLowerCase().trim());
     }
 
     /**
@@ -59,7 +59,7 @@ public class Place extends Location {
      * @return true if found, false otherwise
      */
     public boolean containsTag(String tag) {
-        return tags.contains(tag);
+        return tags.contains(tag.toLowerCase().trim());
     }
 
 
