@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import ca.ubc.cs.cpsc210.meetup.exceptions.IllegalCourseTimeException;
 import ca.ubc.cs.cpsc210.meetup.exceptions.IllegalSectionInitialization;
 import ca.ubc.cs.cpsc210.meetup.util.CourseTime;
 
@@ -106,19 +107,44 @@ public class Schedule {
      * @param timeOfDay The time of day as "HH"
      * @return The building where the student was last or null if nowhere
 	 */
-	public Building whereAmI(String dayOfWeek, String timeOfDay) {
-		SortedSet<Section> sections = getSectionsForDayOfWeek(dayOfWeek);
-		// Find which section ended just before timeOfDay
-		Section lastSection = null;
-		for (Section section : sections) {
-			if (section.getCourseTime().getEndTime().compareTo(timeOfDay) <= 0) {
-				lastSection = section;
-			}
-		}
-		if (lastSection != null)
-			return lastSection.getBuilding();
-		return null;
-	}
+//	public Building whereAmI(String dayOfWeek, String timeOfDay) {
+//		SortedSet<Section> sections = getSectionsForDayOfWeek(dayOfWeek);
+//		// Find which section ended just before timeOfDay
+//		Section lastSection = null;
+//		for (Section section : sections) {
+//			if (section.getCourseTime().getEndTime().compareTo(timeOfDay) <= 0) {
+//				lastSection = section;
+//			}
+//		}
+//		if (lastSection != null)
+//			return lastSection.getBuilding();
+//		return null;
+//	}
+
+    public Building whereAmI(String dayOfWeek, String timeOfDay) {
+        SortedSet<Section> sections = getSectionsForDayOfWeek(dayOfWeek);
+        // Find which section ended just before timeOfDay
+        timeOfDay = timeOfDay + ":00";
+        Section lastSection = null;
+        for (Section section : sections) {
+            try {
+                // We want to do a CourseTime comparison but we want to find out
+                // where we are at the end of the section so make a new CourseTime
+                // with just the end value
+                CourseTime ct = new CourseTime(section.getCourseTime().getEndTime(), section.getCourseTime().getEndTime());
+                if (ct.compareTo(new CourseTime(timeOfDay, timeOfDay)) <= 0) {
+                    lastSection = section;
+                }
+            } catch (IllegalCourseTimeException e) {
+                // Specification indicates this can never happen as caller ensures that
+                // timeOfDay is valid
+            }
+        }
+        if (lastSection != null)
+            return lastSection.getBuilding();
+        return null;
+
+    }
 
     /**
      * Retrieve the sets for a particular day of the week

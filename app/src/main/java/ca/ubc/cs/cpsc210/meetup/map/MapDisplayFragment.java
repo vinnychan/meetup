@@ -1009,8 +1009,8 @@ public class MapDisplayFragment extends Fragment {
 
             Set<Place> filteredPlaces = PlaceFactory.getInstance().findPlacesWithTag(search.toLowerCase());
 
-            //createSimpleDialog("There are " + PlaceFactory.getInstance().getPlaces().size() + " places to meet!").show();
-            createSimpleDialog("There are " + filteredPlaces.size() + " places to meet!").show();
+            createSimpleDialog("Searching for: " + search + " places" +
+                    "\nThere are " + filteredPlaces.size() + " places to meet!").show();
 
       
         }
