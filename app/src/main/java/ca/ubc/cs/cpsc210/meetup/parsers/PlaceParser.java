@@ -30,18 +30,6 @@ public class PlaceParser {
 
     public void parse(String input, String searchTag) {
 
-
-//        sharedPreferences = PreferenceManager
-//                .getDefaultSharedPreferences();
-//
-//        String searchTag;
-//        try {
-//            searchTag = sharedPreferences.getString("searchItem", "food").trim();
-//        } catch (NullPointerException e) {
-//            searchTag = "food";
-//        }
-
-
         tokener = new JSONTokener(input);
 
         try {
