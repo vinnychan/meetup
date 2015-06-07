@@ -7,4 +7,5 @@ Find a meet-up place at UBC for early meetings, lunch breaks, afternoon breaks o
 
 ______
 * Parses JSON formatted data from FourSquare to find meet-up locations near UBC
+* Displays 'Featured Image' as well as restuarant status from FourSquare
 * Plots student routes to different classes based on course schedule and selected meet-up place with MapQuest API
